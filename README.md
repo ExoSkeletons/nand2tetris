@@ -1,7 +1,3 @@
-## Hack Asssmebler
-
-Binary assembler for the nand2tetris hack language.
-
 ## img2asm
 
 Java applet to convert an image PNG file to nand2tetris hack ASM operations.
@@ -10,6 +6,10 @@ Java applet to convert an image PNG file to nand2tetris hack ASM operations.
 
 <img src="https://i.imgur.com/cgu4pmE.png" width="648">
 <img src="https://i.imgur.com/wyIG1ic.png" width="648">
+
+## Hack Asssmebler
+
+Binary assembler for the nand2tetris hack language.
 
 ## Projects
 
