@@ -6,7 +6,7 @@ Binary assembler for the nand2tetris hack language.
 
 Java applet to convert an image PNG file to nand2tetris hack ASM operations.
 
-<img src="https://i.imgur.com/nd9NNBz.png" width="128">
+<img src="https://i.imgur.com/nd9NNBz.png" width="648">
 
 [Download](https://github.com/ExoSkeletons/nand2tetris/releases/download/v1.0.0/img2asm.jar)
 
