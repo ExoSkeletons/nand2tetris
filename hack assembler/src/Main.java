@@ -80,17 +80,27 @@ public class Main {
 			super(e.getMessage(), line);
 		}
 	}
-
-	private static final String
+	private static final int
+			A_INS_BIT_COUNT = 15;	private static final String
 			FILE_NAME = "Rect",
 			FILE_PATH = FILE_NAME + ".asm", OUTPUT_PATH = FILE_NAME + ".hack";
-	private static final int
-			A_INS_BIT_COUNT = 15;
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Hello assembler!");
 
-		String text = Files.readString(Path.of(FILE_PATH));
+		String path;
+		if (args.length == 0) {
+			System.out.println("No filepath arg given.");
+			path = FILE_PATH;
+		} else if (args.length == 1)
+			path = args[0];
+		else {
+			System.err.println("Args must be <=1.");
+			return;
+		}
+		System.out.println("Using filepath: " + path);
+
+		String text = Files.readString(Path.of(path));
 		String bin = hackASMtoBinaryString(semiCleanText(text));
 		Files.writeString(Path.of(OUTPUT_PATH), bin);
 	}
@@ -238,4 +248,6 @@ public class Main {
 		if (str.length() < minBitCount) str = "0".repeat(minBitCount - str.length()) + str;
 		return str;
 	}
+
+
 }
