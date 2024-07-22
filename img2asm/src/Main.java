@@ -16,13 +16,13 @@ public class Main {
 			_DRAW_COLOR = "DRAW_COLOR",
 			CALL_RETURN_A = "callReturnA",
 			CLEAR_CALL_RETURN_A = "clearCallReturnA";
+	public static boolean DO_PRE_CLEAR = true, USE_CUSTOM_CLEAR = false;
 	public static final int
 			SCREEN_W = 512, SCREEN_H = 256,
 			SCREEN_A = 16384,
 			BIT_L = 16,
 			SCREEN_REG_N = SCREEN_W / BIT_L * SCREEN_H;
-
-	public static boolean DO_PRE_CLEAR_WITH_CUSTOM_CLEAR = false;
+	public static byte B_WHITE = 0, B_BLACK = -1;
 
 	public static void main(String[] args) {
 		System.out.println("Hello Hack!");
@@ -73,47 +73,80 @@ public class Main {
 
 		asmText.append("// --=  draw image (generated) =--\n\n");
 
-		asmText.append("(DRAW_IMAGE)\n");
+		asmText.append("(DRAW_IMAGE)\n\n");
 
-		//*
-		// clear screen
-		// find most used bit (0 / -1), for clearing
-		if (DO_PRE_CLEAR_WITH_CUSTOM_CLEAR)
+		// TODO: determine and mark most used color (b/w) as bg
+		int bc = 0, wc = 0;
+		for (byte b : bytes)
+			if (b == B_WHITE) // 000...0
+				wc++;
+			else if (b == B_BLACK) // 111...1
+				bc++;
+		boolean bgWhite = wc >= bc;
+		int clearC = bgWhite ? B_WHITE : B_BLACK;
+		if (DO_PRE_CLEAR) { // TODO: replace with in-house fill code
+			// clear screen
 			asmText
-					.append("// ** clearing screen, with plain bytes (whites) **\n")
-					.append("// set fill color to white color\n")
-					.append("@" + COLOR_V + "\n")
-					.append("M = 0\n")
-					.append("// set call return to here\n")
-					.append("@" + CLEAR_CALL_RETURN_A + "\n")
-					.append("D = A\n")
-					.append("@" + CALL_RETURN_A + "\n")
-					.append("M = D\n")
-					.append("// call draw\n")
-					.append("@" + _DRAW_COLOR + "\n")
-					.append("0 ; JMP\n")
-					.append("(" + CLEAR_CALL_RETURN_A + ")\n")
-					;
+					.append("// ** clearing screen, with plain bytes (").append(bgWhite ? "white" : "black").append(") **\n")
+					.append("(PRE_DRAW_CLEAR)\n");
+			if (USE_CUSTOM_CLEAR)
+				asmText
+						.append("// set fill color to bg color\n")
+						.append("@" + COLOR_V + "\n")
+						.append("M = ").append(clearC).append("\n")
+						.append("// set call return to here\n")
+						.append("@" + CLEAR_CALL_RETURN_A + "\n")
+						.append("D = A\n")
+						.append("@" + CALL_RETURN_A + "\n")
+						.append("M = D\n")
+						.append("// call draw\n")
+						.append("@" + _DRAW_COLOR + "\n")
+						.append("0 ; JMP\n")
+						.append("(" + CLEAR_CALL_RETURN_A + ")\n");
+			else
+				asmText
+						.append("@i\n")
+						.append("M = 0\n")
+
+						.append("(CLEAR_SCREEN_LOOP)\n")
+
+						.append("@").append(SCREEN_REG_N).append("\n")
+						.append("D = A\n")
+						.append("@i\n")
+						.append("D = D - M\n")
+						.append("@CLEAR_SCREEN_LOOP_EXIT\n")
+						.append("D;JEQ\n")
+
+						.append("@").append(SCREEN_A).append("\n")
+						.append("D = A\n")
+						.append("@i\n")
+						.append("A = M + D\n")
+						.append("M = ").append(clearC).append("\n")
+						.append("@i\n")
+						.append("M = M + 1\n")
+						.append("@CLEAR_SCREEN_LOOP\n")
+						.append("0;JMP\n")
+
+						.append("(CLEAR_SCREEN_LOOP_EXIT)\n")
+						;
+			asmText.append("\n");
+		}
 		//**/
 		asmText.append("\n");
-		asmText.append("// ** draw non-background bytes\n");
+		asmText.append("// ** draw (non-background) bytes\n");
 		for (int i = 0; i < SCREEN_REG_N; i++) {
 			byte b = bytes[i];
-			if (b != 0) {
-				if (b == -1 || b == 1)
+			if (!DO_PRE_CLEAR || b != clearC) {
+				if (b == -1 || b == 1 || b == 0)
+					// set with immediate
 					asmText
 							.append("@").append(i + SCREEN_A).append("\n")
 							.append("M = ").append(b).append("\n");
 				else {
-					if (b > 0)
-						asmText
-								.append("@").append(b).append("\n")
-								.append("D = A\n");
-					else
-						asmText
-								.append("@").append(-b).append("\n")
-								.append("D = A\n")
-								.append("D = - D\n");
+					// set using A register
+					asmText
+							.append("@").append(b < 0 ? -b : b).append("\n")
+							.append("D = ").append(b < 0 ? "-A" : "A").append("\n");
 					asmText
 							.append("@").append(i + SCREEN_A).append("\n")
 							.append("M = D\n");
@@ -130,8 +163,6 @@ public class Main {
 		;
 		return asmText.toString();
 	}
-
-
 
 
 }
