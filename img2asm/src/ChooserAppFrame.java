@@ -63,7 +63,7 @@ public class ChooserAppFrame extends JFrame {
 		});
 
 		output.addActionListener(e -> {
-			Main.writeGeneratedFile(ImageTools.imageIconToBufferedImage((ImageIcon) scaledBWIL.getIcon()));
+			Main.writeGeneratedFile(ImageTools.imageIconToBufferedImage((ImageIcon) scaledBWIL.getIcon()), Main.OUTPUT_PATH);
 			try {
 				Desktop.getDesktop().edit(new File(Main.OUTPUT_PATH));
 			} catch (IOException ignored) {
