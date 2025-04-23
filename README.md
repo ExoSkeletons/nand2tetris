@@ -9,8 +9,6 @@ Java applet to convert an image PNG file to nand2tetris Hack ASM operations.
 
 Generates Hack ASM code to print any selected image on the Hack CPU Emulator screen.
 
-### Usage
-
 ``` java -jar image2asm.jar <input file path> <output file path> ```
 
 Run with no args to launch the applet.
